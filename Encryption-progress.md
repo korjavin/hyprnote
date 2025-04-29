@@ -11,67 +11,87 @@ We need to implement a secure encryption system that:
 4. Securely manages the key in memory
 5. Properly cleans up when the application exits
 
+## Progress
+
+### ✅ Phase 1: Core Encryption Infrastructure (Completed)
+
+1. ✅ Created a new crate `encryption` in the `crates` directory
+2. ✅ Added necessary dependencies to Cargo.toml
+3. ✅ Implemented error handling module (`error.rs`)
+4. ✅ Implemented key derivation with Argon2id (`key_manager.rs`)
+5. ✅ Implemented basic encryption/decryption utilities (`crypto.rs`)
+6. ✅ Implemented database field encryption/decryption helpers (`db_crypto.rs`)
+7. ✅ Implemented file encryption/decryption helpers (`file_crypto.rs`)
+
 ## Implementation Steps
 
-### 1. Set Up Dependencies
+### 1. Set Up Dependencies ✅
 
-Add the necessary crates to Cargo.toml:
+Added the necessary crates to Cargo.toml:
 
 ```toml
 [dependencies]
-# Existing dependencies...
 argon2 = "0.5.2"
 password-hash = "0.5.0"
-rand_core = "0.6.4"
+rand_core = { version = "0.6.4", features = ["std"] }
 aes-gcm = "0.10.3"
-zeroize = "1.6.0"
+zeroize = { version = "1.6.0", features = ["derive"] }
 secrecy = "0.8.0"
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 ```
 
-### 2. Create Encryption Module Structure
+### 2. Create Encryption Module Structure ✅
 
-Create a new module structure for encryption:
+Created a new crate structure for encryption:
 
 ```
-src/
-  encryption/
-    mod.rs           # Main module exports
+crates/encryption/
+  Cargo.toml
+  src/
+    lib.rs           # Main module exports
+    error.rs         # Error handling
     key_manager.rs   # Password handling and key derivation
     crypto.rs        # Encryption/decryption utilities
     db_crypto.rs     # Database field encryption helpers
     file_crypto.rs   # File encryption helpers
 ```
 
-### 3. Implement Key Derivation (key_manager.rs)
+### 3. Implement Key Derivation (key_manager.rs) ✅
 
-- Create a secure key manager that:
+- Created a secure key manager that:
   - Receives the password from the frontend
   - Generates or retrieves a salt
-  - Derives a 256-bit key using Argon2id
-  - Securely stores the key in memory
+  - Derives a 256-bit key using Argon2id with strong parameters (19 MiB memory, 2 iterations)
+  - Securely stores the key in memory using zeroize
   - Provides a way to access the key for encryption/decryption
   - Implements zeroize for secure cleanup
 
-### 4. Implement Encryption/Decryption Utilities (crypto.rs)
+### 4. Implement Encryption/Decryption Utilities (crypto.rs) ✅
 
-- Create utility functions for:
-  - `encrypt_bytes(key: &[u8], plaintext: &[u8]) -> Vec<u8>`
-  - `decrypt_bytes(key: &[u8], data: &[u8]) -> Result<Vec<u8>, DecryptError>`
-  - These will handle AES-256-GCM encryption with proper IV generation
+- Created utility functions for:
+  - `encrypt_bytes(key: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, EncryptionError>`
+  - `decrypt_bytes(key: &[u8], data: &[u8]) -> Result<Vec<u8>, EncryptionError>`
+  - `encrypt_bytes_with_aad(key: &[u8], plaintext: &[u8], aad: &[u8]) -> Result<Vec<u8>, EncryptionError>`
+  - `decrypt_bytes_with_aad(key: &[u8], data: &[u8], aad: &[u8]) -> Result<Vec<u8>, EncryptionError>`
+  - These handle AES-256-GCM encryption with proper IV generation
 
-### 5. Implement Database Field Encryption (db_crypto.rs)
+### 5. Implement Database Field Encryption (db_crypto.rs) ✅
 
-- Create helpers for encrypting/decrypting database fields
-- Identify sensitive fields in the database schema (conversations, raw_memo_html, enhanced_memo_html)
-- Implement functions to transparently encrypt on write and decrypt on read
+- Created helpers for encrypting/decrypting database fields:
+  - `encrypt_field(key: &[u8], value: &str) -> Result<Vec<u8>, EncryptionError>`
+  - `decrypt_field(key: &[u8], data: &[u8]) -> Result<String, EncryptionError>`
+- Added tests for field encryption/decryption
 
-### 6. Implement File Encryption (file_crypto.rs)
+### 6. Implement File Encryption (file_crypto.rs) ✅
 
-- Create helpers for encrypting/decrypting WAV files
-- Implement functions to:
-  - Encrypt WAV files before saving to disk
-  - Decrypt WAV files when loading for playback
-  - Handle temporary decrypted files securely
+- Created helpers for encrypting/decrypting files:
+  - `encrypt_file(key: &[u8], input_path: P, output_path: P) -> Result<(), EncryptionError>`
+  - `decrypt_file(key: &[u8], input_path: P, output_path: P) -> Result<(), EncryptionError>`
+  - `encrypt_content_to_file(key: &[u8], content: &[u8], output_path: P) -> Result<(), EncryptionError>`
+  - `decrypt_file_to_memory(key: &[u8], input_path: P) -> Result<Vec<u8>, EncryptionError>`
+- Added tests for file encryption/decryption
 
 ### 7. Create Frontend Password Prompt
 
@@ -99,39 +119,62 @@ src/
 - Test error handling (wrong password, corrupted data)
 - Test secure cleanup
 
-## Detailed Implementation Plan
-
-### Phase 1: Core Encryption Infrastructure
-
-1. Set up the encryption module structure
-2. Implement key derivation with Argon2id
-3. Implement basic encryption/decryption utilities
-4. Create a secure key manager
+## Next Steps
 
 ### Phase 2: Database Integration
 
-1. Identify all sensitive fields in the database
-2. Implement database field encryption/decryption
-3. Modify database access code to use encryption
-4. Test database encryption/decryption
+1. ✅ Identify all sensitive fields in the database
+   - `raw_memo_html` in the sessions table
+   - `enhanced_memo_html` in the sessions table
+   - `conversations` in the sessions table (stored as JSON)
+
+2. Modify database access code to use encryption
+   - Update `upsert_session` in `crates/db-user/src/sessions_ops.rs` to encrypt sensitive fields
+   - Update `get_session` and `list_sessions` to decrypt sensitive fields
+   - Ensure proper error handling for encryption/decryption failures
+
+3. Test database encryption/decryption
 
 ### Phase 3: File Encryption
 
-1. Implement WAV file encryption/decryption
-2. Modify file I/O code to use encryption
-3. Test file encryption/decryption
+1. Modify file I/O code to use encryption for WAV files
+   - Update WAV file saving in `plugins/listener/src/fsm.rs` to encrypt audio files
+   - Implement decryption when reading WAV files
+   - Files are saved at `app_dir.join(session_id).join("audio.wav")`
 
-### Phase 4: Frontend Integration
+2. Test file encryption/decryption with actual WAV files
 
-1. Create password prompt UI
-2. Set up Tauri command for password handling
+### Phase 4: Frontend Integration (In Progress)
+
+1. ✅ Set up Tauri plugin for encryption
+   - Created plugin structure in `plugins/encryption`
+   - Implemented key management and password handling
+   - Added commands for unlocking/locking the app and changing passwords
+   - Set up salt storage for consistent key derivation
+
+2. Create password prompt UI
+   - Implement a React component for password entry
+   - Show the prompt at application startup
+
 3. Implement error handling and user feedback
+   - Handle incorrect passwords
+   - Provide feedback on encryption status
 
 ### Phase 5: Testing and Refinement
 
 1. Comprehensive testing of all components
 2. Performance optimization if needed
 3. Security review and hardening
+
+## Testing Progress
+
+✅ Core Encryption Module Tests
+- All unit tests for the encryption crate are passing
+- Tested key derivation with Argon2id
+- Tested encryption/decryption of data with AES-256-GCM
+- Tested database field encryption/decryption
+- Tested file encryption/decryption
+- Tested error handling for tampered data
 
 ## Security Considerations
 

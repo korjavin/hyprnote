@@ -1,0 +1,20 @@
+[package]
+name = "tauri-plugin-encryption"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tauri = { workspace = true }
+tauri-plugin = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+specta = { workspace = true }
+tauri-specta = { workspace = true, features = ["typescript"] }
+hypr-encryption = { workspace = true }
+
+[build-dependencies]
+tauri-build = { workspace = true }
+tauri-specta = { workspace = true, features = ["typescript"] }

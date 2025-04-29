@@ -56,17 +56,7 @@ jobs:
             fi
           fi
         shell: bash
-      # Cache protoc installation
-      - name: Cache protoc
-        uses: actions/cache@v4
-        id: cache-protoc
-        with:
-          path: ~/.cache/protoc
-          key: ${{ runner.os }}-protoc-${{ hashFiles('.github/workflows/desktop_cd.yaml') }}
-
-      - uses: arduino/setup-protoc@v3
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ./.github/actions/setup_protoc
       - uses: ./.github/actions/install_desktop_deps
         with:
           target: "macos"

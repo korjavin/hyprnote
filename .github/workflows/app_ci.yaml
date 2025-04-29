@@ -17,20 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup_protoc
       - uses: ./.github/actions/install_app_deps
       - uses: ./.github/actions/rust_install
       - uses: ./.github/actions/pnpm_install
       - run: pnpm -F ui build
       - run: pnpm -F app build
-      # Cache protoc installation
-      - name: Cache protoc
-        uses: actions/cache@v4
-        id: cache-protoc
-        with:
-          path: ~/.cache/protoc
-          key: ${{ runner.os }}-protoc-${{ hashFiles('.github/workflows/app_ci.yaml') }}
-
-      - uses: arduino/setup-protoc@v3
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: cargo build -p app

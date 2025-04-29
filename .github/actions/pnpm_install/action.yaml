@@ -12,9 +12,7 @@ runs:
         cache: "pnpm"
         cache-dependency-path: "**/pnpm-lock.yaml"
 
-    # Cache the pnpm store
     - uses: actions/cache@v4
-      name: Cache pnpm store
       with:
         path: |
           ~/.pnpm-store

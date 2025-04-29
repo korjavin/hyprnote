@@ -9,9 +9,8 @@ runs:
     - run: rustup toolchain install 1.83.0 --profile minimal --no-self-update
       shell: bash
 
-    # Cache Cargo registry and git repositories separately for faster restoration
-    - name: Cache Cargo registry and git
-      uses: actions/cache@v4
+    # cache cargo registry and git repositories separately for faster restoration
+    - uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry/index

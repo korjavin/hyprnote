@@ -8,6 +8,18 @@ runs:
   steps:
     - run: rustup toolchain install 1.83.0 --profile minimal --no-self-update
       shell: bash
+
+    # Cache Cargo registry and git repositories separately for faster restoration
+    - name: Cache Cargo registry and git
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-registry-
     - if: inputs.target == 'macos'
       run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
       shell: bash
@@ -20,13 +32,22 @@ runs:
     - if: inputs.target == 'windows'
       run: rustup target add x86_64-pc-windows-msvc
       shell: bash
+    # Cache the target directory for faster compilation
+    - name: Cache Cargo target directory
+      uses: actions/cache@v4
+      with:
+        path: |
+          target/
+          apps/desktop/src-tauri/target/
+        key: ${{ runner.os }}-cargo-target-${{ inputs.target }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-target-${{ inputs.target }}-
+
     - uses: Swatinem/rust-cache@v2
       with:
-        # Improve caching by specifying the cache key and paths
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        shared-key: ${{ runner.os }}-cargo
-        cache-directories: |
-          ~/.cargo/registry/index
-          ~/.cargo/registry/cache
-          ~/.cargo/git/db
-        save-if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
+        # Improve caching by specifying workspaces and other options
+        workspaces: |
+          apps/desktop/src-tauri
+          crates
+        shared-key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        cache-on-failure: true

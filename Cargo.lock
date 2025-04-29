@@ -3387,6 +3387,7 @@ dependencies = [
  "tauri-plugin-decorum",
  "tauri-plugin-deep-link",
  "tauri-plugin-dialog",
+ "tauri-plugin-encryption",
  "tauri-plugin-flags",
  "tauri-plugin-fs",
  "tauri-plugin-global-shortcut",

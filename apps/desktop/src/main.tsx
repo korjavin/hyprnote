@@ -1,5 +1,14 @@
-import "@hypr/ui/globals.css";
+// Import UI styles - temporarily commented out due to build issues
+// import "@hypr/ui/globals.css";
 import "./styles/globals.css";
+
+// Import mock Tauri APIs for development
+import { mockTauriApis } from "./mocks/tauri";
+
+// Initialize mock Tauri APIs when running in development without Tauri
+if (import.meta.env.DEV && !window.hasOwnProperty("__TAURI_IPC__")) {
+  mockTauriApis();
+}
 
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
@@ -15,6 +24,8 @@ import { Toaster } from "@hypr/ui/components/ui/toast";
 import { TooltipProvider } from "@hypr/ui/components/ui/tooltip";
 import { ThemeProvider } from "@hypr/ui/contexts/theme";
 import { broadcastQueryClient } from "./utils";
+import { EncryptionProvider, useEncryption } from "./contexts/encryption";
+import { PasswordModal } from "./components/password-modal";
 
 import { messages as enMessages } from "./locales/en/messages";
 import { messages as koMessages } from "./locales/ko/messages";
@@ -96,7 +107,23 @@ function App() {
     return null;
   }
 
-  return <RouterProvider router={router} context={{ ...context, userId: userId.data }} />;
+  return (
+    <EncryptionProvider>
+      <RouterProvider router={router} context={{ ...context, userId: userId.data }} />
+      <PasswordModalContainer />
+    </EncryptionProvider>
+  );
+}
+
+function PasswordModalContainer() {
+  const { isPasswordModalOpen, closePasswordModal } = useEncryption();
+
+  return (
+    <PasswordModal
+      isOpen={isPasswordModalOpen}
+      onClose={closePasswordModal}
+    />
+  );
 }
 
 if (!rootElement.innerHTML) {

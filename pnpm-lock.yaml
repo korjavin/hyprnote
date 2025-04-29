@@ -153,6 +153,9 @@ importers:
       '@hypr/plugin-db':
         specifier: workspace:^
         version: link:../../plugins/db
+      '@hypr/plugin-encryption':
+        specifier: workspace:^
+        version: link:../../plugins/encryption
       '@hypr/plugin-flags':
         specifier: workspace:^
         version: link:../../plugins/flags
@@ -1273,6 +1276,8 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.5.0
         version: 2.5.0
+
+  plugins/encryption: {}
 
   plugins/flags:
     dependencies:

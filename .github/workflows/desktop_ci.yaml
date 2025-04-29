@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - cicd-cache # experimental
+
     paths:
       - apps/desktop/**
       - plugins/**
@@ -26,6 +28,15 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+
+      # Cache protoc installation
+      - name: Cache protoc
+        uses: actions/cache@v4
+        id: cache-protoc
+        with:
+          path: ~/.cache/protoc
+          key: ${{ runner.os }}-protoc-${{ hashFiles('.github/workflows/desktop_ci.yaml') }}
+
       - uses: arduino/setup-protoc@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

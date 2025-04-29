@@ -21,3 +21,12 @@ runs:
       run: rustup target add x86_64-pc-windows-msvc
       shell: bash
     - uses: Swatinem/rust-cache@v2
+      with:
+        # Improve caching by specifying the cache key and paths
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        shared-key: ${{ runner.os }}-cargo
+        cache-directories: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+        save-if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}

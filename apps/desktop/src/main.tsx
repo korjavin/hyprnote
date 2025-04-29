@@ -24,7 +24,7 @@ import { Toaster } from "@hypr/ui/components/ui/toast";
 import { TooltipProvider } from "@hypr/ui/components/ui/tooltip";
 import { ThemeProvider } from "@hypr/ui/contexts/theme";
 import { broadcastQueryClient } from "./utils";
-import { EncryptionProvider, useEncryption } from "./contexts/encryption";
+import { EncryptionProvider } from "./contexts/encryption";
 
 import { messages as enMessages } from "./locales/en/messages";
 import { messages as koMessages } from "./locales/ko/messages";
